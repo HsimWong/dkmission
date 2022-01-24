@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package dkmanager;
+service Registry {
+  rpc Register(HostRegisterInfo) returns (RegisterResult) {}
+  rpc ReportNodeStatus(HostReport) returns (ReportStatus) {}
+}
+
+message HostRegisterInfo {
+  string HostName = 1;
+  string HostAddr = 2;
+  int32 HostPort = 3;
+}
+
+message RegisterResult {
+  bool Result = 1;
+}
+
+message HostReport {
+  string HostName = 1;
+  Status HostStatus = 2;
+}
+
+message ReportStatus {
+  bool Result = 1;
+}
+
+enum Status {
+  ONLINE = 0;
+  OFFLINE = 1;
+  BROKEN = 2;
+}
