@@ -8,6 +8,8 @@ It is generated from these files:
 	register.proto
 
 It has these top-level messages:
+	Empty
+	ScheduleResult
 	HostRegisterInfo
 	RegisterResult
 	HostReport
@@ -38,20 +40,20 @@ const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 type Status int32
 
 const (
-	Status_ONLINE  Status = 0
-	Status_OFFLINE Status = 1
-	Status_BROKEN  Status = 2
+	Status_READY     Status = 0
+	Status_NOT_READY Status = 1
+	Status_BROKEN    Status = 2
 )
 
 var Status_name = map[int32]string{
-	0: "ONLINE",
-	1: "OFFLINE",
+	0: "READY",
+	1: "NOT_READY",
 	2: "BROKEN",
 }
 var Status_value = map[string]int32{
-	"ONLINE":  0,
-	"OFFLINE": 1,
-	"BROKEN":  2,
+	"READY":     0,
+	"NOT_READY": 1,
+	"BROKEN":    2,
 }
 
 func (x Status) String() string {
@@ -59,16 +61,47 @@ func (x Status) String() string {
 }
 func (Status) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
+type Empty struct {
+}
+
+func (m *Empty) Reset()                    { *m = Empty{} }
+func (m *Empty) String() string            { return proto.CompactTextString(m) }
+func (*Empty) ProtoMessage()               {}
+func (*Empty) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+type ScheduleResult struct {
+	HostName string `protobuf:"bytes,1,opt,name=HostName,json=hostName" json:"HostName,omitempty"`
+	HostAddr string `protobuf:"bytes,2,opt,name=HostAddr,json=hostAddr" json:"HostAddr,omitempty"`
+}
+
+func (m *ScheduleResult) Reset()                    { *m = ScheduleResult{} }
+func (m *ScheduleResult) String() string            { return proto.CompactTextString(m) }
+func (*ScheduleResult) ProtoMessage()               {}
+func (*ScheduleResult) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+func (m *ScheduleResult) GetHostName() string {
+	if m != nil {
+		return m.HostName
+	}
+	return ""
+}
+
+func (m *ScheduleResult) GetHostAddr() string {
+	if m != nil {
+		return m.HostAddr
+	}
+	return ""
+}
+
 type HostRegisterInfo struct {
 	HostName string `protobuf:"bytes,1,opt,name=HostName,json=hostName" json:"HostName,omitempty"`
 	HostAddr string `protobuf:"bytes,2,opt,name=HostAddr,json=hostAddr" json:"HostAddr,omitempty"`
-	HostPort int32  `protobuf:"varint,3,opt,name=HostPort,json=hostPort" json:"HostPort,omitempty"`
 }
 
 func (m *HostRegisterInfo) Reset()                    { *m = HostRegisterInfo{} }
 func (m *HostRegisterInfo) String() string            { return proto.CompactTextString(m) }
 func (*HostRegisterInfo) ProtoMessage()               {}
-func (*HostRegisterInfo) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (*HostRegisterInfo) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
 func (m *HostRegisterInfo) GetHostName() string {
 	if m != nil {
@@ -84,27 +117,28 @@ func (m *HostRegisterInfo) GetHostAddr() string {
 	return ""
 }
 
-func (m *HostRegisterInfo) GetHostPort() int32 {
-	if m != nil {
-		return m.HostPort
-	}
-	return 0
-}
-
 type RegisterResult struct {
-	Result bool `protobuf:"varint,1,opt,name=Result,json=result" json:"Result,omitempty"`
+	Result       string `protobuf:"bytes,1,opt,name=Result,json=result" json:"Result,omitempty"`
+	RegisterTime string `protobuf:"bytes,2,opt,name=RegisterTime,json=registerTime" json:"RegisterTime,omitempty"`
 }
 
 func (m *RegisterResult) Reset()                    { *m = RegisterResult{} }
 func (m *RegisterResult) String() string            { return proto.CompactTextString(m) }
 func (*RegisterResult) ProtoMessage()               {}
-func (*RegisterResult) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*RegisterResult) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
-func (m *RegisterResult) GetResult() bool {
+func (m *RegisterResult) GetResult() string {
 	if m != nil {
 		return m.Result
 	}
-	return false
+	return ""
+}
+
+func (m *RegisterResult) GetRegisterTime() string {
+	if m != nil {
+		return m.RegisterTime
+	}
+	return ""
 }
 
 type HostReport struct {
@@ -115,7 +149,7 @@ type HostReport struct {
 func (m *HostReport) Reset()                    { *m = HostReport{} }
 func (m *HostReport) String() string            { return proto.CompactTextString(m) }
 func (*HostReport) ProtoMessage()               {}
-func (*HostReport) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (*HostReport) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
 
 func (m *HostReport) GetHostName() string {
 	if m != nil {
@@ -128,17 +162,18 @@ func (m *HostReport) GetHostStatus() Status {
 	if m != nil {
 		return m.HostStatus
 	}
-	return Status_ONLINE
+	return Status_READY
 }
 
 type ReportStatus struct {
-	Result bool `protobuf:"varint,1,opt,name=Result,json=result" json:"Result,omitempty"`
+	Result     bool   `protobuf:"varint,1,opt,name=Result,json=result" json:"Result,omitempty"`
+	ReportTime string `protobuf:"bytes,2,opt,name=ReportTime,json=reportTime" json:"ReportTime,omitempty"`
 }
 
 func (m *ReportStatus) Reset()                    { *m = ReportStatus{} }
 func (m *ReportStatus) String() string            { return proto.CompactTextString(m) }
 func (*ReportStatus) ProtoMessage()               {}
-func (*ReportStatus) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+func (*ReportStatus) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
 
 func (m *ReportStatus) GetResult() bool {
 	if m != nil {
@@ -147,7 +182,16 @@ func (m *ReportStatus) GetResult() bool {
 	return false
 }
 
+func (m *ReportStatus) GetReportTime() string {
+	if m != nil {
+		return m.ReportTime
+	}
+	return ""
+}
+
 func init() {
+	proto.RegisterType((*Empty)(nil), "dkmanager.Empty")
+	proto.RegisterType((*ScheduleResult)(nil), "dkmanager.ScheduleResult")
 	proto.RegisterType((*HostRegisterInfo)(nil), "dkmanager.HostRegisterInfo")
 	proto.RegisterType((*RegisterResult)(nil), "dkmanager.RegisterResult")
 	proto.RegisterType((*HostReport)(nil), "dkmanager.HostReport")
@@ -168,6 +212,7 @@ const _ = grpc.SupportPackageIsVersion4
 type RegistryClient interface {
 	Register(ctx context.Context, in *HostRegisterInfo, opts ...grpc.CallOption) (*RegisterResult, error)
 	ReportNodeStatus(ctx context.Context, in *HostReport, opts ...grpc.CallOption) (*ReportStatus, error)
+	ScheduleTask(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ScheduleResult, error)
 }
 
 type registryClient struct {
@@ -196,11 +241,21 @@ func (c *registryClient) ReportNodeStatus(ctx context.Context, in *HostReport, o
 	return out, nil
 }
 
+func (c *registryClient) ScheduleTask(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ScheduleResult, error) {
+	out := new(ScheduleResult)
+	err := grpc.Invoke(ctx, "/dkmanager.Registry/ScheduleTask", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Registry service
 
 type RegistryServer interface {
 	Register(context.Context, *HostRegisterInfo) (*RegisterResult, error)
 	ReportNodeStatus(context.Context, *HostReport) (*ReportStatus, error)
+	ScheduleTask(context.Context, *Empty) (*ScheduleResult, error)
 }
 
 func RegisterRegistryServer(s *grpc.Server, srv RegistryServer) {
@@ -243,6 +298,24 @@ func _Registry_ReportNodeStatus_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Registry_ScheduleTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RegistryServer).ScheduleTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dkmanager.Registry/ScheduleTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RegistryServer).ScheduleTask(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Registry_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "dkmanager.Registry",
 	HandlerType: (*RegistryServer)(nil),
@@ -255,6 +328,10 @@ var _Registry_serviceDesc = grpc.ServiceDesc{
 			MethodName: "ReportNodeStatus",
 			Handler:    _Registry_ReportNodeStatus_Handler,
 		},
+		{
+			MethodName: "ScheduleTask",
+			Handler:    _Registry_ScheduleTask_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "register.proto",
@@ -263,23 +340,26 @@ var _Registry_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("register.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 285 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x91, 0x5f, 0x4b, 0xf3, 0x30,
-	0x14, 0xc6, 0x9b, 0xbd, 0xbc, 0xb1, 0x3b, 0x4a, 0xa9, 0x01, 0xb5, 0xd6, 0x9b, 0x91, 0x0b, 0x29,
-	0x82, 0x05, 0xe7, 0x27, 0x50, 0xb6, 0xe1, 0x50, 0x52, 0x89, 0x97, 0x5e, 0x55, 0x9a, 0x6d, 0xa2,
-	0x5b, 0xc6, 0x69, 0x76, 0xe1, 0x17, 0xf1, 0xf3, 0x4a, 0x92, 0x76, 0x7f, 0x14, 0xbd, 0x3b, 0x4f,
-	0x9e, 0x87, 0x73, 0x7e, 0xe7, 0x04, 0x22, 0x54, 0xd3, 0xd7, 0xda, 0x28, 0xcc, 0x97, 0xa8, 0x8d,
-	0x66, 0xdd, 0xea, 0x6d, 0x5e, 0x2e, 0xca, 0xa9, 0x42, 0x3e, 0x81, 0xf8, 0x4e, 0xd7, 0x46, 0x36,
-	0x81, 0xf1, 0x62, 0xa2, 0x59, 0x0a, 0xa1, 0x7d, 0x13, 0xe5, 0x5c, 0x25, 0xa4, 0x47, 0xb2, 0xae,
-	0x0c, 0x67, 0x8d, 0x6e, 0xbd, 0x9b, 0xaa, 0xc2, 0xa4, 0xb3, 0xf1, 0xac, 0x6e, 0xbd, 0x47, 0x8d,
-	0x26, 0xf9, 0xd7, 0x23, 0xd9, 0x7f, 0xef, 0x59, 0xcd, 0x33, 0x88, 0xda, 0x19, 0x52, 0xd5, 0xab,
-	0x77, 0xc3, 0x8e, 0x81, 0xfa, 0xca, 0xcd, 0x08, 0x25, 0x45, 0xa7, 0xf8, 0x33, 0x80, 0x27, 0x5a,
-	0x6a, 0x34, 0x7f, 0xb2, 0x5c, 0xf9, 0xe4, 0x93, 0x29, 0xcd, 0xaa, 0x76, 0x34, 0x51, 0xff, 0x30,
-	0x5f, 0xef, 0x96, 0x7b, 0x43, 0xc2, 0x6c, 0x1d, 0xe2, 0xe7, 0x70, 0xe0, 0x1b, 0x7b, 0xfd, 0x1b,
-	0xc4, 0xc5, 0x25, 0xd0, 0x26, 0x01, 0x40, 0x0b, 0xf1, 0x30, 0x16, 0xc3, 0x38, 0x60, 0xfb, 0xb0,
-	0x57, 0x8c, 0x46, 0x4e, 0x10, 0x6b, 0xdc, 0xca, 0xe2, 0x7e, 0x28, 0xe2, 0x4e, 0xff, 0x93, 0x40,
-	0xe8, 0xd7, 0xc3, 0x0f, 0x36, 0x68, 0x6b, 0x85, 0xec, 0x6c, 0x0b, 0xe7, 0xfb, 0x9d, 0xd3, 0xd3,
-	0x2d, 0x73, 0xf7, 0x38, 0x3c, 0x60, 0x03, 0x88, 0x3d, 0xa9, 0xd0, 0x95, 0x6a, 0x58, 0x8e, 0x7e,
-	0x74, 0xb3, 0x81, 0xf4, 0x64, 0xa7, 0xcf, 0x66, 0x3b, 0x1e, 0xbc, 0x50, 0xf7, 0xe1, 0xd7, 0x5f,
-	0x01, 0x00, 0x00, 0xff, 0xff, 0x36, 0xb0, 0xbd, 0x62, 0x02, 0x02, 0x00, 0x00,
+	// 336 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0x4f, 0x4f, 0x83, 0x40,
+	0x10, 0xc5, 0xa1, 0x49, 0x11, 0x26, 0x95, 0xe0, 0x26, 0x6a, 0xad, 0x89, 0x31, 0x7b, 0x32, 0x1e,
+	0x48, 0xac, 0x67, 0x0f, 0x35, 0x60, 0xea, 0x9f, 0xd0, 0x64, 0xcb, 0xc5, 0x78, 0x30, 0x28, 0x6b,
+	0x69, 0x5a, 0xba, 0x64, 0x59, 0x0e, 0xfd, 0xa0, 0x7e, 0x1f, 0x03, 0xbb, 0x50, 0xa8, 0x89, 0x07,
+	0x6f, 0x3b, 0xf3, 0x5e, 0x1e, 0xbf, 0x19, 0x06, 0x6c, 0x4e, 0x17, 0xcb, 0x5c, 0x50, 0xee, 0x66,
+	0x9c, 0x09, 0x86, 0xac, 0x78, 0x95, 0x46, 0x9b, 0x68, 0x41, 0x39, 0x3e, 0x80, 0xbe, 0x9f, 0x66,
+	0x62, 0x8b, 0xa7, 0x60, 0xcf, 0x3f, 0x13, 0x1a, 0x17, 0x6b, 0x4a, 0x68, 0x5e, 0xac, 0x05, 0x1a,
+	0x81, 0x39, 0x65, 0xb9, 0x08, 0xa2, 0x94, 0x0e, 0xf5, 0x4b, 0xfd, 0xca, 0x22, 0x66, 0xa2, 0xea,
+	0x5a, 0x9b, 0xc4, 0x31, 0x1f, 0xf6, 0x76, 0x5a, 0x59, 0xe3, 0x27, 0x70, 0x4a, 0x8d, 0xa8, 0x6f,
+	0x3e, 0x6e, 0xbe, 0xd8, 0xbf, 0xb3, 0x5e, 0xc0, 0xae, 0x73, 0x14, 0xd5, 0x09, 0x18, 0xf2, 0xa5,
+	0x72, 0x0c, 0x2e, 0xfb, 0x18, 0x06, 0xb5, 0x33, 0x5c, 0xa6, 0x54, 0x25, 0x0d, 0x78, 0xab, 0x87,
+	0xdf, 0x00, 0x24, 0x59, 0xc6, 0xf8, 0xdf, 0xf3, 0xdd, 0x48, 0xe7, 0x5c, 0x44, 0xa2, 0xc8, 0xab,
+	0x2c, 0x7b, 0x7c, 0xe4, 0x36, 0x6b, 0x73, 0xa5, 0x40, 0x20, 0x69, 0x4c, 0xf8, 0xa1, 0x04, 0x28,
+	0x83, 0x65, 0xbd, 0x07, 0x6a, 0x36, 0xa0, 0x17, 0x00, 0xd2, 0xd7, 0xc2, 0x04, 0xde, 0x74, 0xae,
+	0x5d, 0x30, 0x54, 0x82, 0x05, 0x7d, 0xe2, 0x4f, 0xbc, 0x57, 0x47, 0x43, 0x87, 0x60, 0x05, 0xb3,
+	0xf0, 0x5d, 0x96, 0x3a, 0x02, 0x30, 0xee, 0xc9, 0xec, 0xd9, 0x0f, 0x9c, 0xde, 0xf8, 0x5b, 0x07,
+	0x53, 0x4e, 0xce, 0xb7, 0xc8, 0xab, 0xdf, 0x94, 0xa3, 0xf3, 0x16, 0xef, 0xfe, 0x0f, 0x19, 0x9d,
+	0xb5, 0xc4, 0xee, 0x86, 0xb1, 0x86, 0x3c, 0x70, 0x24, 0x62, 0xc0, 0x62, 0xaa, 0x60, 0x8e, 0x7f,
+	0xa5, 0x95, 0x86, 0xd1, 0x69, 0x27, 0x67, 0x37, 0x3e, 0xd6, 0xd0, 0x1d, 0x0c, 0xea, 0x8b, 0x0a,
+	0xa3, 0x7c, 0x85, 0x9c, 0x96, 0xb5, 0xba, 0xb9, 0x0e, 0x44, 0xf7, 0xf8, 0xb0, 0xf6, 0x61, 0x54,
+	0xb7, 0x7a, 0xfb, 0x13, 0x00, 0x00, 0xff, 0xff, 0xfc, 0x45, 0x62, 0x22, 0xbd, 0x02, 0x00, 0x00,
 }

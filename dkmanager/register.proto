@@ -4,16 +4,23 @@ package dkmanager;
 service Registry {
   rpc Register(HostRegisterInfo) returns (RegisterResult) {}
   rpc ReportNodeStatus(HostReport) returns (ReportStatus) {}
+  rpc ScheduleTask(Empty) returns (ScheduleResult) {}
+}
+
+message Empty {}
+message ScheduleResult {
+  string HostName = 1;
+  string HostAddr = 2;
 }
 
 message HostRegisterInfo {
   string HostName = 1;
   string HostAddr = 2;
-  int32 HostPort = 3;
 }
 
 message RegisterResult {
-  bool Result = 1;
+  string Result = 1;
+  string RegisterTime = 2;
 }
 
 message HostReport {
@@ -23,10 +30,11 @@ message HostReport {
 
 message ReportStatus {
   bool Result = 1;
+  string ReportTime = 2;
 }
 
 enum Status {
-  ONLINE = 0;
-  OFFLINE = 1;
+  READY = 0;
+  NOT_READY = 1;
   BROKEN = 2;
 }

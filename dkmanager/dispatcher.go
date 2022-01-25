@@ -4,7 +4,6 @@ import (
 	"github.com/gammazero/deque"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
-	"net"
 	"time"
 )
 
@@ -51,7 +50,7 @@ func (dsp *dispatcher) dispatch()  {
 	}
 }
 
-func (dsp *dispatcher) getTarget() net.Addr {
-	return nil
+func (dsp *dispatcher) getTarget() {
+
 }
 
