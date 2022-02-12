@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package dkworker;
+
+service TaskHandle {
+  rpc StatusTest(Needle) returns (NeedleReply) {}
+  rpc PushTask(Task) returns (TaskPushingReply) {}
+}
+
+message Task {
+  GrayScaleImage imageData = 1;
+  string subTaskID = 2;
+  string mainTaskID = 3;
+}
+
+
+message GrayScaleImage {
+  repeated GrayScaleRow grayScaleRow = 1;
+}
+
+message GrayScaleRow {
+  repeated uint32 rowPixels = 1;
+}
+
+
+message TaskPushingReply {
+  string TaskPushingReplyContent = 1;
+}
+
+message Needle {
+  int64 NeedleValue = 1;
+}
+
+message NeedleReply {
+  int64 negNeedleVal = 1;
+}

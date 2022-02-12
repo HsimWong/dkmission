@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package dkmanager;
+service Registry {
+  rpc Register(HostRegisterInfo) returns (RegisterResult) {}
+  rpc ReportNodeStatus(HostReport) returns (ReportStatus) {}
+  rpc ScheduleTask(Empty) returns (ScheduleResult) {}
+}
+
+message Empty {}
+message ScheduleResult {
+  string HostName = 1;
+  string HostAddr = 2;
+}
+
+message HostRegisterInfo {
+  string HostName = 1;
+  string HostPort = 2;
+}
+
+message RegisterResult {
+  string Result = 1;
+  int64 RegisterTime = 2;
+}
+
+message HostReport {
+  string HostName = 1;
+  Status HostStatus = 2;
+}
+
+message ReportStatus {
+  bool Result = 1;
+  string ReportTime = 2;
+}
+
+enum Status {
+  READY = 0;
+  NOT_READY = 1;
+  BROKEN = 2;
+}
