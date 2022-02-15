@@ -1,6 +1,7 @@
 package utils
 
 import (
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -18,31 +19,8 @@ func ThreadBlock() {
 	wg.Wait()
 }
 
-type SyncMessenger struct {
-	Requester chan string
-	Responder chan string
-}
-
-func NewSyncMessenger() *SyncMessenger {
-	return &SyncMessenger{
-		Requester: make(chan string),
-		Responder: make(chan string),
+func Check(err error, msg string) {
+	if err != nil {
+		log.Warnf("ErrorOccurs: %v", msg)
 	}
 }
-
-func (s *SyncMessenger) Request(reqMsg string) string {
-	s.Requester <- reqMsg
-	return <- s.Responder
-}
-
-func (s *SyncMessenger) Serve() string {
-	return <- s.Requester
-}
-
-func (s *SyncMessenger) Respond(resMsg string) {
-	s.Responder <- resMsg
-}
-
-
-
-

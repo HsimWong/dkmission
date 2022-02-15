@@ -10,7 +10,6 @@ import (
 )
 
 type TaskHandler struct {
-
 }
 
 func (th TaskHandler) StatusTest(ctx context.Context, needle *dkworker.Needle) (*dkworker.NeedleReply, error) {
@@ -23,8 +22,6 @@ func (th TaskHandler) PushTask(ctx context.Context, task *dkworker.Task) (*dkwor
 	return &dkworker.TaskPushingReply{
 		TaskPushingReplyContent: "TaskPushingSuccess",
 	}, nil
-
-
 }
 
 

@@ -19,7 +19,6 @@ type Worker struct {
 
 func NewWorker() *Worker {
 	hostname := uuid.New().String()
-
 	return &Worker{
 		localPort: utils.WorkerPort,
 		hostname:  hostname,
@@ -58,5 +57,4 @@ func (w *Worker) Run() {
 	// Start Client Service
 	w.taskHandler.Run()
 	w.register()
-
 }
