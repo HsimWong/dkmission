@@ -4,17 +4,21 @@ import (
 	"context"
 	dkworkermesg "dkmission/comm/dkworker"
 	"dkmission/utils"
+	"github.com/fsnotify/fsnotify"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"io/ioutil"
+	"os"
+	"path"
 	"time"
 )
 
 
 
 type dispatcher struct {
-	//subtasks *deque.Deque
+	deployments map[string][]*subtask
 	subtaskChan chan *subtask
 	subtasksSig chan bool
 	messageWithRegistry *utils.SyncMessenger
@@ -27,6 +31,7 @@ messageWithRegistry *utils.SyncMessenger,
 	//subtasks := getSubTaskQueue()
 	log.Infof("Dispatcher established")
 	return &dispatcher{
+		deployments: make(map[string][]*subtask),
 		subtaskChan: make(chan *subtask, 0xffff),
 		subtasksSig: make(chan bool, 0xffff),
 		messageWithRegistry: messageWithRegistry,
@@ -34,50 +39,138 @@ messageWithRegistry *utils.SyncMessenger,
 }
 
 func (dsp *dispatcher) Run() {
-	log.Infof("split start running")
-	go dsp.split()
+	//log.Infof("split start running")
+	err := os.MkdirAll(utils.TaskImageDir, os.ModePerm)
+	utils.Check(err, "making path failed")
+	go utils.FileServer("data", "0.0.0.0"+utils.FileServerPort)
+	go dsp.subtaskGenerate()
 	go dsp.dispatch()
 }
 
-func (dsp *dispatcher) split() {
-	time.Sleep(5 * time.Second)
-	for {
-		mainUuid := uuid.New().String()
-		log.Infof("generating %s", mainUuid)
-		for i := 0; i < 5; i++ {
-			newSubTask := &subtask{
-				mainTaskID:  mainUuid,
-				SubtaskID:   uuid.New().String(),
-				SubtaskData: nil,
-			}
-			//dsp.subtasks.PushBack(newSubTask)
-			dsp.subtasksSig <- true
-			dsp.subtaskChan <- newSubTask
-			log.Infof("A new task has been pushed: %s",
-				newSubTask.SubtaskID)
-			time.Sleep(5 * time.Second)
+//func (dsp *dispatcher) fileWatcher()  {
+//
+//}
+
+func (dsp *dispatcher) taskSplit(src string) []string {
+	var subtaskNames []string
+	for i := 0; i < 10; i++ {
+		subtaskNames = append(subtaskNames, uuid.New().String())
+	}
+	log.Println(subtaskNames)
+	return subtaskNames
+}
+
+func (dsp *dispatcher) logSubTask(sub *subtask) {
+	dbInstance := utils.NewDatabase()
+	sqlCmd := "insert into deployment(subtask_ID, subtask_create_time, main_task_ID) values (?,?,?);"
+	statement, err := dbInstance.DbObject.Prepare(sqlCmd)
+	utils.Check(err, "database logSubTask not prepared")
+	_, err = statement.Exec(sub.SubtaskID, time.Now().String(), sub.mainTaskID)
+	utils.Check(err, "Database operation for logSubTask failed")
+
+	//dbInstance.DbObject.Prepare()
+}
+
+func (dsp *dispatcher) dealSingleMainTask(src string) {
+	mainTaskName := src
+	subtaskNames := dsp.taskSplit(mainTaskName)
+	err := os.MkdirAll(path.Join(utils.SubTaskImgDir, mainTaskName), os.ModePerm)
+	utils.Check(err, "Failed to make directory")
+	for _, subtaskName := range subtaskNames {
+		newSubTask := &subtask{
+			mainTaskID:      mainTaskName,
+			SubtaskID:       subtaskName,
+			SubtaskDataPath: "",
+			DeployTarget:    "",
+		}
+		dsp.logSubTask(newSubTask)
+		dsp.subtasksSig <- true
+		dsp.subtaskChan <- newSubTask
+		dsp.subtasksSig <- true
+		dsp.subtaskChan <- newSubTask
+	}
+}
+
+func (dsp *dispatcher) subtaskGenerate() {
+	//time.Sleep(5 * time.Second)
+	files, err := ioutil.ReadDir(utils.TaskImageDir)
+	utils.Check(err, "Unable to read taskImageDir")
+
+	for _, file := range files {
+		if !file.IsDir() {
+			dsp.dealSingleMainTask(path.Join(utils.TaskImageDir, file.Name()))
 		}
 	}
 
+	watcher, err := fsnotify.NewWatcher()
+	utils.Check(err, "file watcher init failed")
+	defer func() {
+		err = watcher.Close()
+		utils.Check(err, "watcher closing failed")
+	}()
+	done := make(chan bool) // Not knowing what it is for, but added as official tutorial has it.
+	go func() {
+		defer close(done)
+		for {
+			event, ok := <-watcher.Events
+			if !ok {
+				log.Warnf("watcher events popping failed")
+				continue
+			}
+			if event.Op == fsnotify.Create {
+				dsp.dealSingleMainTask(event.Name[len(utils.TaskImageDir):])
+			}
+		}
+	}()
+	err = watcher.Add(utils.TaskImageDir)
+	utils.Check(err, "Added path to file watcher failed")
+	<- done
+
 }
+
+func (dsp *dispatcher) logDispatch(sub *subtask, subtaskRole string)  {
+	log.Infof(subtaskRole)
+	//sqlCmd := `update deployment set ("?_deploy_target", "?_deploy_time")
+	//= ("?","?") where subtask_ID = "?"
+//`
+
+	sqlCmd := `update deployment set ?_deploy_target = "jdkjfdj" where subtask_ID = "89707f18-b6b8-49ea-a831-1c6647fcddf1"`
+	dbInstance := utils.NewDatabase()
+	statement, err := dbInstance.DbObject.Prepare(sqlCmd)
+	utils.Check(err, "database preparing for logDispatch failed")
+	//_, err = statement.Exec(subtaskRole, subtaskRole, sub.DeployTarget, time.Now().String(), sub.SubtaskID)
+	_, err = statement.Exec()
+	utils.Check(err, "database executing for logDispatch failed")
+}
+
 
 func (dsp *dispatcher) dispatch()  {
 	log.Infof("dispatcher start running")
 	for {
 		if <- dsp.subtasksSig {
-			log.Infoln("Dispatcher: Received from dispatcher: ")
-			// get target from registry
-			log.Infof("Dispatcher: Requesting candidate host\n")
-			candidateHostAddr := dsp.messageWithRegistry.Request("Request")
-			log.Infof("Dispatcher: Received candidate host: %s", candidateHostAddr)
+
+			exception := ""
+			role := "main"
+			subtaskInstance := <-dsp.subtaskChan
+			if len(dsp.deployments[subtaskInstance.SubtaskID]) >= 1 {
+				exception = dsp.deployments[subtaskInstance.SubtaskID][0].DeployTarget
+				role = "back"
+			}
+
+			req := "{\"exception\": \"" + exception + "\"}"
+			candidateHostAddr := dsp.messageWithRegistry.Request(req)
 			if candidateHostAddr == "None" {
+				dsp.subtaskChan <- subtaskInstance
 				dsp.subtasksSig <- true
 				time.Sleep(3 * time.Second)
 				continue
 			}
 			log.Infof("Dispatcher: Received candidate host: %s", candidateHostAddr)
-			subtaskInstance := <-dsp.subtaskChan
-			log.Infoln("Dispatcher: trying to dispatch it", subtaskInstance.mainTaskID)
+
+
+			subtaskInstance.DeployTarget = candidateHostAddr
+			//if candidateHostAddr ==
+			log.Infoln("Dispatcher: trying to dispatch it", subtaskInstance.SubtaskID)
 
 			conn, err := grpc.Dial(candidateHostAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
@@ -93,6 +186,12 @@ func (dsp *dispatcher) dispatch()  {
 				SubTaskID:  subtaskInstance.SubtaskID,
 				MainTaskID: subtaskInstance.mainTaskID,
 			})
+
+			dsp.deployments[subtaskInstance.SubtaskID] = append(
+				dsp.deployments[subtaskInstance.SubtaskID], subtaskInstance)
+
+			dsp.logDispatch(subtaskInstance, role)
+
 			cancel()
 			err = conn.Close()
 			if err != nil {

@@ -18,7 +18,7 @@ type DKManager struct {
 }
 
 func NewDKManager() *DKManager{
-	log.Info("S")
+	//log.Info("S")
 	commDispRegi := utils.NewSyncMessenger()
 	return &DKManager{
 		Subtasks:   getSubTaskQueue(),

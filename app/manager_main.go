@@ -8,6 +8,7 @@ import (
 
 func main() {
 	log.SetLevel(log.DebugLevel)
+
 	manager := dkmanager.NewDKManager()
 	go manager.Run()
 	utils.ThreadBlock()

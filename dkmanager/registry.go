@@ -5,6 +5,7 @@ import (
 	dkmanagermesg "dkmission/comm/dkmanager"
 	dkworkermesg "dkmission/comm/dkworker"
 	"dkmission/utils"
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -60,7 +61,7 @@ func (r Registry) Register(ctx context.Context, info *dkmanagermesg.HostRegister
 			HostName:         info.GetHostName(),
 			HostAddress:      hostAddr,
 			HostRegisterTime: time.Now(),
-			HostAvailability:   3,
+			HostAvailability:   1,
 		}
 
 		r.hosts[host.HostAddress] = host
@@ -165,14 +166,25 @@ func (r *Registry) logInspectHost(status string, hostAddress string) {
 
 }
 
-
+type except struct {
+	Exception string `json:"exception"`
+}
 func (r *Registry) respondHostRequest() {
 	for {
 		log.Infof("respondant start serving...")
-		_ = r.messageWithDispatcher.Serve()
+		exceptJson := r.messageWithDispatcher.Serve()
+		log.Infof(exceptJson)
+		exceptionObject := except{}
+		err := json.Unmarshal([]byte(exceptJson), &exceptionObject)
+		utils.Check(err, "Unmarshalling exception failed")
+		log.Infof("EXCEPTION: %s", exceptionObject.Exception)
+
 		log.Infof("Received a request.")
 		flagFoundHost := false
 		for k, host := range r.hosts {
+			if k == exceptionObject.Exception {
+				continue
+			}
 			if host.HostAvailability >= 1 {
 				log.Infof("Found an available node: %s", k)
 				r.messageWithDispatcher.Respond(k)

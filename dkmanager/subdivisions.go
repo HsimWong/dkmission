@@ -8,7 +8,8 @@ import (
 type subtask struct {
 	mainTaskID string
 	SubtaskID   string
-	SubtaskData [][][]int8
+	SubtaskDataPath string
+	DeployTarget string
 }
 var subTaskQueue *deque.Deque
 

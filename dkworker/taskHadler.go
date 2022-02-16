@@ -18,7 +18,7 @@ func (th TaskHandler) StatusTest(ctx context.Context, needle *dkworker.Needle) (
 }
 
 func (th TaskHandler) PushTask(ctx context.Context, task *dkworker.Task) (*dkworker.TaskPushingReply, error) {
-	log.Infof("Received Request: %s", task.GetMainTaskID())
+	log.Infof("Received Request: %s", task.GetSubTaskID())
 	return &dkworker.TaskPushingReply{
 		TaskPushingReplyContent: "TaskPushingSuccess",
 	}, nil
@@ -34,5 +34,10 @@ func (th *TaskHandler) Run() {
 	dkworker.RegisterTaskHandleServer(s, *th)
 
 	log.Infoln("Registry start serving")
-	go s.Serve(lis)
+	go func() {
+		err = s.Serve(lis)
+		utils.Check(err, "Task Handler serving failed")
+	}()
+
+
 }

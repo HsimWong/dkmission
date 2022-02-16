@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/mattn/go-sqlite3 v1.14.11 // indirect
 	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect
