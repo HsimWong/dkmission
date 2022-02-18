@@ -10,6 +10,8 @@ type subtask struct {
 	SubtaskID   string
 	SubtaskDataPath string
 	DeployTarget string
+	HeightAnchor int
+	WidthAnchor int
 }
 var subTaskQueue *deque.Deque
 

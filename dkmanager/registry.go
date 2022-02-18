@@ -61,7 +61,7 @@ func (r Registry) Register(ctx context.Context, info *dkmanagermesg.HostRegister
 			HostName:         info.GetHostName(),
 			HostAddress:      hostAddr,
 			HostRegisterTime: time.Now(),
-			HostAvailability:   1,
+			HostAvailability:   3,
 		}
 
 		r.hosts[host.HostAddress] = host

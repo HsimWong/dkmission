@@ -22,7 +22,7 @@ func NewWorker() *Worker {
 	return &Worker{
 		localPort: utils.WorkerPort,
 		hostname:  hostname,
-		taskHandler: &TaskHandler{},
+		taskHandler: NewTaskHandler(),
 	}
 
 }
