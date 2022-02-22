@@ -31,7 +31,11 @@ func (th TaskHandler) PushTask(ctx context.Context, task *dkworker.Task) (*dkwor
 }
 
 func (th *TaskHandler) taskProcess(task *dkworker.Task) {
+	// Processing code here
 	
+
+
+
 }
 
 func (th *TaskHandler) Run() {
@@ -48,6 +52,7 @@ func (th *TaskHandler) Run() {
 		utils.Check(err, "Task Handler serving failed")
 	}()
 
+	// Run services for processing images.
 	go func() {
 		for {
 			go th.taskProcess(<-th.tasks)
