@@ -6,6 +6,7 @@ import (
 	dkworkermesg "dkmission/comm/dkworker"
 	"dkmission/utils"
 	"encoding/json"
+	"errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -39,12 +40,40 @@ func NewRegistry(messenger *utils.SyncMessenger) *Registry {
 	}
 }
 
-func (r Registry) Register(ctx context.Context, info *dkmanagermesg.HostRegisterInfo) (*dkmanagermesg.RegisterResult, error) {
-
+func (r *Registry) getClientIP(ctx context.Context) string {
 	p, _ := peer.FromContext(ctx)
 	hostIP := strings.Split(p.Addr.String(), ":")[0]
+	return hostIP
+}
 
-	hostAddr := hostIP + info.GetHostPort()
+func (r *Registry) logRelease(info *dkmanagermesg.ReleaseRequest) {
+	//dbInstance := utils.NewDatabase()
+	//dbInstance.DbObject.Prepare("update deployment set ")
+}
+
+func (r Registry) ReleaseResource(ctx context.Context, info *dkmanagermesg.ReleaseRequest) (*dkmanagermesg.ReleaseResult, error) {
+	targetAddr := r.getClientIP(ctx) + utils.WorkerPort
+	log.Debugf("Received release request from:%s", targetAddr)
+	//r.hosts[targetAddr].HostAvailability
+	var ret *dkmanagermesg.ReleaseResult
+	var err error
+	if avail, ok := r.hosts[targetAddr]; ok {
+		avail.HostAvailability ++
+		ret = &dkmanagermesg.ReleaseResult{ReleaseResult: "Success"}
+		r.logRelease(info)
+		err = nil
+	} else {
+		ret = &dkmanagermesg.ReleaseResult{ReleaseResult: "TargetNotExist"}
+		//error = Error()
+		err = errors.New("targetNotExist")
+	}
+	return ret, err
+
+}
+
+func (r Registry) Register(ctx context.Context, info *dkmanagermesg.HostRegisterInfo) (*dkmanagermesg.RegisterResult, error) {
+
+	hostAddr := r.getClientIP(ctx) + info.GetHostPort()
 	//hostAddr := hostIP +
 	log.Infof("Received register request from %s", hostAddr)
 	if value, err := r.hosts[hostAddr]; err {
@@ -169,10 +198,11 @@ func (r *Registry) logInspectHost(status string, hostAddress string) {
 type except struct {
 	Exception string `json:"exception"`
 }
+
 func (r *Registry) respondHostRequest() {
 	for {
 		log.Infof("respondant start serving...")
-		exceptJson := r.messageWithDispatcher.Serve()
+		exceptJson := r.messageWithDispatcher.Serve().(string)
 		log.Infof(exceptJson)
 		exceptionObject := except{}
 		err := json.Unmarshal([]byte(exceptJson), &exceptionObject)
@@ -221,9 +251,13 @@ func (r *Registry) Run() {
 	//utils.RunGRPCServer(r, utils.RegistryServerPort, RegisterRegistryServer)
 	// grpc serving starting finished, going on monitoring each node.
 	log.Debugf("Inspector Start serving")
-	go r.inspectHosts()
+	//go r.inspectHosts()
 	log.Debugf(	"scheduler start serving")
 	go r.respondHostRequest()
 
+}
+
+func(r *Registry) mustEmbedUnimplementedRegistryServer() {
+	panic("implement me")
 }
 

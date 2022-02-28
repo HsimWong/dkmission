@@ -11,47 +11,32 @@ import (
 	"time"
 )
 
-var 
+//var
 
 type Worker struct {
 	localPort string
 	hostname string
 	taskHandler *TaskHandler
+	wkThComm *utils.SyncMessenger
 }
 
 func NewWorker() *Worker {
 	hostname := uuid.New().String()
+	wkThComm := utils.NewSyncMessenger()
 	return &Worker{
 		localPort: utils.WorkerPort,
 		hostname:  hostname,
-		taskHandler: NewTaskHandler(),
+		taskHandler: NewTaskHandler(wkThComm),
+		wkThComm: wkThComm,
 	}
 }
 
-
-
-type Option interface {
-
-}
-
-//type Functions func(ctx context.Context, v interface{}, opt ...grpc.CallOption)(interface{}, error)
-func (th *TaskHandler) clientRegister(dkmgrOpt []Option, ctx context.Context,
-	client dkmanager.RegistryClient)(interface{}, error)  {
-	//respond, err := client.Register(ctx, &dkmanager.HostRegisterInfo{
-	//	HostName: dkmgrOpt[0],
-	//	HostPort: "",
-	//})
-
-	s := ""
-
-}
-func callRegistryFunc(funcName string, v interface{}) error {
-	//f := make(map[string]func(context.Context, interface{}, ...grpc.CallOption)(interface{}, error))
-	//f := make(map[string]Functions)
-
-
-	log.Infof("Register to %s", utils.RegistryServerIP + utils.RegistryServerPort)
-	conn, err := grpc.Dial(utils.RegistryServerIP + utils.RegistryServerPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func(w *Worker) callRegistryFunc(funcName string,
+	commInfo interface{})interface{} {
+	//
+	conn, err := grpc.Dial(utils.RegistryServerIP +
+		utils.RegistryServerPort,
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -59,18 +44,32 @@ func callRegistryFunc(funcName string, v interface{}) error {
 	client := dkmanager.NewRegistryClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	//f["Register"] = client.Register
-	////f["Register"] = client.Register
-	////f["ReportNodeStatus"] = client.ReportNodeStatus
-	////f["ScheduleTask"] = client.ScheduleTask
-	//
-	////respond:= f["Register"](ctx, v)
+	var respond interface{}
+	switch funcName {
+	case "Register":
+		respond, err = client.Register(ctx,
+			commInfo.(*dkmanager.HostRegisterInfo))
+		break
+	case "ReleaseRequest":
+		respond, err = client.ReleaseResource(ctx,
+			commInfo.(*dkmanager.ReleaseRequest))
 
+	default:
+		break
+	}
+	return respond
+}
 
-	respond, err := client.Register(ctx, &dkmanager.HostRegisterInfo{
-		HostName: "",
-		HostPort: utils.WorkerPort,
-	})
+func (w *Worker) register() error{
+	//return callRegistryFunc()
+	log.Infof("Register to %s", utils.RegistryServerIP + utils.RegistryServerPort)
+	respond := w.callRegistryFunc("Register", &dkmanager.HostRegisterInfo{
+			HostName: "",
+			HostPort: utils.WorkerPort,
+	}).(*dkmanager.RegisterResult)
+	//respond := respondInterface.(*dkmanager.RegisterResult)
+
+	//utils.Check(err, "Calling callRegistryFunc failed")
 	if respond.Result == "Success"{
 		log.Infof("Successfully registered as port: %s", utils.WorkerPort)
 		return nil
@@ -79,15 +78,28 @@ func callRegistryFunc(funcName string, v interface{}) error {
 	} else {
 		panic("RegisterFailed")
 	}
-}
 
-func (w *Worker) register() error{
-	return callRegistryFunc()
 }
 
 
 func (w *Worker) Run() {
 	// Start Client Service
-	w.taskHandler.Run()
-	w.register()
+	go w.taskHandler.Run()
+	go w.register()
+
+	// listening to taskHandler:
+	go func() {
+		for {
+			releaseRequest := w.wkThComm.Serve().(*dkmanager.ReleaseRequest)
+			releaseRespond := w.callRegistryFunc("ReleaseRequest",
+				releaseRequest).(*dkmanager.ReleaseResult)
+			if releaseRespond.GetReleaseResult() == "Success" {
+				w.wkThComm.Respond("Success")
+			} else {
+				w.wkThComm.Respond("Failed")
+			}
+		}
+
+	}()
+
 }

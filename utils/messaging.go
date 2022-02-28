@@ -1,28 +1,28 @@
 package utils
 
-
 type SyncMessenger struct {
-	Requester chan string
-	Responder chan string
+	Requester chan interface{}
+	Responder chan interface{}
 }
 
 func NewSyncMessenger() *SyncMessenger {
+
 	return &SyncMessenger{
-		Requester: make(chan string),
-		Responder: make(chan string),
+		Requester: make(chan interface{}),
+		Responder: make(chan interface{}),
 	}
 }
 
-func (s *SyncMessenger) Request(reqMsg string) string {
+func (s *SyncMessenger) Request(reqMsg interface{}) interface{} {
 	s.Requester <- reqMsg
 	return <- s.Responder
 }
 
-func (s *SyncMessenger) Serve() string {
+func (s *SyncMessenger) Serve() interface{} {
 	return <- s.Requester
 }
 
-func (s *SyncMessenger) Respond(resMsg string) {
+func (s *SyncMessenger) Respond(resMsg interface{}) {
 	s.Responder <- resMsg
 }
 

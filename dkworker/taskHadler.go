@@ -2,8 +2,11 @@ package dkworker
 
 import (
 	"context"
+	"dkmission/comm/dkmanager"
 	"dkmission/comm/dkworker"
+	"dkmission/processor"
 	"dkmission/utils"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"net"
@@ -11,10 +14,14 @@ import (
 
 type TaskHandler struct {
 	tasks chan *dkworker.Task
+	msgToWorker *utils.SyncMessenger
 }
 
-func NewTaskHandler() *TaskHandler {
-	return &TaskHandler{tasks: make(chan *dkworker.Task, 2)}
+func NewTaskHandler(msgToWorker *utils.SyncMessenger) *TaskHandler {
+	return &TaskHandler{
+		tasks: make(chan *dkworker.Task, 2),
+		msgToWorker: msgToWorker,
+	}
 }
 
 func (th TaskHandler) StatusTest(ctx context.Context, needle *dkworker.Needle) (*dkworker.NeedleReply, error) {
@@ -30,12 +37,26 @@ func (th TaskHandler) PushTask(ctx context.Context, task *dkworker.Task) (*dkwor
 	}, nil
 }
 
-func (th *TaskHandler) taskProcess(task *dkworker.Task) {
+func (th *TaskHandler) taskProcess(task *dkworker.Task, messenger *utils.SyncMessenger) {
 	// Processing code here
-	
+	log.Debugf("Executing subtask: %s", task.SubTaskID)
+	//time.Sleep(5 * time.Second)
+
+	result := messenger.Request(task.GetSubTaskID())
+	if result != nil {
+		fmt.Println()
+	}
 
 
 
+	log.Debugf("Finished executing subtask: %s", task.SubTaskID)
+
+	//rsp := th.msgToWorker
+
+	rsp := th.msgToWorker.Request(&dkmanager.ReleaseRequest{Subtask_ID: task.SubTaskID}).(string)
+	if rsp != "Success" {
+		panic("Release Failed:")
+	}
 }
 
 func (th *TaskHandler) Run() {
@@ -54,8 +75,17 @@ func (th *TaskHandler) Run() {
 
 	// Run services for processing images.
 	go func() {
+		var JobProcIdfs = make([]*utils.SyncMessenger, 2)
+		var jobProc [2]*processor.Processor
+		for index, messenger := range JobProcIdfs {
+			jobProc[index] = &processor.Processor{JobProcessIdf: messenger}
+			jobProc[index].Run()
+		}
+		index := 0
+
 		for {
-			go th.taskProcess(<-th.tasks)
+			go th.taskProcess(<-th.tasks, JobProcIdfs[index])
+			index ^= 1
 		}
 	}()
 

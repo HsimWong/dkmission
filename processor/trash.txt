@@ -1,0 +1,22 @@
+/*
+typedef struct BoundingBox {
+    int typeID;
+    int height;
+    int width;
+    int posx;
+    int posy;
+}BoundingBox;
+
+void detectFuck(void *cgoBoundingboxes) {
+    BoundingBox *boundingboxes = (BoundingBox *)cgoBoundingboxes;
+    for (int i = 0; i < 10; i++) {
+        // boundingboxes[i] = (BoundingBox *)malloc(10 * sizeof(BoundingBox));
+        boundingboxes[i].height = 100;
+        boundingboxes[i].posx = 347828;
+        boundingboxes[i].posy = 84;
+        boundingboxes[i].typeID = 4444;
+        boundingboxes[i].width = 65;
+    }
+    // return boundingboxes;
+}
+ */

@@ -1,0 +1,8 @@
+data/*
+*.o
+*.so
+*.h
+*.weights
+*.names
+*.jpg
+*.JPG

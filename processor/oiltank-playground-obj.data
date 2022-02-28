@@ -1,0 +1,6 @@
+classes = 2
+train = oiltank-playground-train.txt
+valid = oiltank-playground-valid.txt
+names = oiltank-playground.names
+backup = backup/
+

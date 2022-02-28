@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 	worker := dkworker.NewWorker()
 	log.Info("dkworker binary")
 	go worker.Run()

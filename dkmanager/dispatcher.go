@@ -204,11 +204,11 @@ func (dsp *dispatcher) dispatch()  {
 			log.Infof("Dispatcher: Received candidate host: %s", candidateHostAddr)
 
 
-			subtaskInstance.DeployTarget = candidateHostAddr
+			subtaskInstance.DeployTarget = candidateHostAddr.(string)
 			//if candidateHostAddr ==
 			log.Infoln("Dispatcher: trying to dispatch it", subtaskInstance.SubtaskID)
 
-			conn, err := grpc.Dial(candidateHostAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			conn, err := grpc.Dial(candidateHostAddr.(string), grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
 				log.Fatalf("did not connect: %v", err)
 			}

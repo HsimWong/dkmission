@@ -1,10 +1,30 @@
 syntax = "proto3";
 
+option go_package="./;dkmanager";
+
 package dkmanager;
 service Registry {
   rpc Register(HostRegisterInfo) returns (RegisterResult) {}
   rpc ReportNodeStatus(HostReport) returns (ReportStatus) {}
   rpc ScheduleTask(Empty) returns (ScheduleResult) {}
+  rpc ReportResult(SubTaskResult) returns(ReleaseResult) {}
+}
+
+message ObjectResult {
+  uint32 objectType = 1;
+  uint32 width = 2;
+  uint32 height = 3;
+  uint32 topLeftX = 4;
+  uint32 topLeftY = 5;
+}
+
+message SubTaskResult {
+  string subtask_ID = 1;
+  repeated ObjectResult objects = 2;
+}
+
+message ReleaseResult {
+  string releaseResult = 1;
 }
 
 message Empty {}
