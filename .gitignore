@@ -1,7 +1,7 @@
 data/*
 *.o
 *.so
-*.h
+*darknet.h
 *.weights
 *.names
 *.jpg
