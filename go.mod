@@ -1,6 +1,6 @@
 module dkmission
 
-go 1.17
+go 1.16
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1
@@ -13,10 +13,7 @@ require (
 	google.golang.org/protobuf v1.27.1
 )
 
-require (
-	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20220118154757-00ab72f36ad5 // indirect
-)
+require google.golang.org/genproto v0.0.0-20220118154757-00ab72f36ad5 // indirect
 
 require (
 	github.com/google/uuid v1.3.0

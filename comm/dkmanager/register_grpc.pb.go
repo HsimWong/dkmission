@@ -21,7 +21,7 @@ type RegistryClient interface {
 	Register(ctx context.Context, in *HostRegisterInfo, opts ...grpc.CallOption) (*RegisterResult, error)
 	ReportNodeStatus(ctx context.Context, in *HostReport, opts ...grpc.CallOption) (*ReportStatus, error)
 	ScheduleTask(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ScheduleResult, error)
-	ReleaseResource(ctx context.Context, in *ReleaseRequest, opts ...grpc.CallOption) (*ReleaseResult, error)
+	ReportResult(ctx context.Context, in *SubTaskResult, opts ...grpc.CallOption) (*ReleaseResult, error)
 }
 
 type registryClient struct {
@@ -59,9 +59,9 @@ func (c *registryClient) ScheduleTask(ctx context.Context, in *Empty, opts ...gr
 	return out, nil
 }
 
-func (c *registryClient) ReleaseResource(ctx context.Context, in *ReleaseRequest, opts ...grpc.CallOption) (*ReleaseResult, error) {
+func (c *registryClient) ReportResult(ctx context.Context, in *SubTaskResult, opts ...grpc.CallOption) (*ReleaseResult, error) {
 	out := new(ReleaseResult)
-	err := c.cc.Invoke(ctx, "/dkmanager.Registry/ReleaseResource", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/dkmanager.Registry/ReportResult", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ type RegistryServer interface {
 	Register(context.Context, *HostRegisterInfo) (*RegisterResult, error)
 	ReportNodeStatus(context.Context, *HostReport) (*ReportStatus, error)
 	ScheduleTask(context.Context, *Empty) (*ScheduleResult, error)
-	ReleaseResource(context.Context, *ReleaseRequest) (*ReleaseResult, error)
+	ReportResult(context.Context, *SubTaskResult) (*ReleaseResult, error)
 	//mustEmbedUnimplementedRegistryServer()
 }
 
@@ -92,16 +92,16 @@ func (UnimplementedRegistryServer) ReportNodeStatus(context.Context, *HostReport
 func (UnimplementedRegistryServer) ScheduleTask(context.Context, *Empty) (*ScheduleResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ScheduleTask not implemented")
 }
-func (UnimplementedRegistryServer) ReleaseResource(context.Context, *ReleaseRequest) (*ReleaseResult, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReleaseResource not implemented")
+func (UnimplementedRegistryServer) ReportResult(context.Context, *SubTaskResult) (*ReleaseResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReportResult not implemented")
 }
-func (UnimplementedRegistryServer) mustEmbedUnimplementedRegistryServer() {}
+//func (UnimplementedRegistryServer) mustEmbedUnimplementedRegistryServer() {}
 
 // UnsafeRegistryServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to RegistryServer will
 // result in compilation errors.
 type UnsafeRegistryServer interface {
-	mustEmbedUnimplementedRegistryServer()
+	//mustEmbedUnimplementedRegistryServer()
 }
 
 func RegisterRegistryServer(s grpc.ServiceRegistrar, srv RegistryServer) {
@@ -162,20 +162,20 @@ func _Registry_ScheduleTask_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Registry_ReleaseResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReleaseRequest)
+func _Registry_ReportResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubTaskResult)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RegistryServer).ReleaseResource(ctx, in)
+		return srv.(RegistryServer).ReportResult(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dkmanager.Registry/ReleaseResource",
+		FullMethod: "/dkmanager.Registry/ReportResult",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistryServer).ReleaseResource(ctx, req.(*ReleaseRequest))
+		return srv.(RegistryServer).ReportResult(ctx, req.(*SubTaskResult))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -200,8 +200,8 @@ var Registry_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Registry_ScheduleTask_Handler,
 		},
 		{
-			MethodName: "ReleaseResource",
-			Handler:    _Registry_ReleaseResource_Handler,
+			MethodName: "ReportResult",
+			Handler:    _Registry_ReportResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -10,6 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"net"
+	"path"
+	"time"
 )
 
 type TaskHandler struct {
@@ -42,18 +44,29 @@ func (th *TaskHandler) taskProcess(task *dkworker.Task, messenger *utils.SyncMes
 	log.Debugf("Executing subtask: %s", task.SubTaskID)
 	//time.Sleep(5 * time.Second)
 
-	result := messenger.Request(task.GetSubTaskID())
-	if result != nil {
-		fmt.Println()
-	}
 
+	imgUrl := "http://" + utils.RegistryServerIP +
+		 utils.FileServerPort + "/" + task.GetSubTaskID() + ".png"
+	//resp, err := http.Get(imgUrl)
+	log.Debugf("Try downloading img %s", imgUrl)
+	imgDir := path.Join(utils.TmpImgDir, task.GetSubTaskID() + ".png")
+	utils.DownloadFile(imgUrl, imgDir)
+	log.Debugf("Downloading Finished")
+	result := messenger.Request(imgDir).([]*dkmanager.ObjectResult)
+	if result != nil {
+		fmt.Println(result)
+	}
 
 
 	log.Debugf("Finished executing subtask: %s", task.SubTaskID)
 
 	//rsp := th.msgToWorker
+	rsp := th.msgToWorker.Request(&dkmanager.SubTaskResult{
+		Subtask_ID: task.SubTaskID,
+		Objects:    result,
+	})
 
-	rsp := th.msgToWorker.Request(&dkmanager.ReleaseRequest{Subtask_ID: task.SubTaskID}).(string)
+	//rsp := th.msgToWorker.Request(&dkmanager.ReleaseRequest{Subtask_ID: task.SubTaskID}).(string)
 	if rsp != "Success" {
 		panic("Release Failed:")
 	}
@@ -75,17 +88,34 @@ func (th *TaskHandler) Run() {
 
 	// Run services for processing images.
 	go func() {
-		var JobProcIdfs = make([]*utils.SyncMessenger, 2)
-		var jobProc [2]*processor.Processor
-		for index, messenger := range JobProcIdfs {
-			jobProc[index] = &processor.Processor{JobProcessIdf: messenger}
-			jobProc[index].Run()
-		}
-		index := 0
+		//var testIDFS = utils.NewSyncMessenger()
 
+		var JobProcIdfs = make([]*utils.SyncMessenger, utils.HostAvailability)
+		var jobProc [utils.HostAvailability]*processor.Processor
+
+		for i := 0; i < utils.HostAvailability; i++	 {
+			JobProcIdfs[i] = utils.NewSyncMessenger()
+			jobProc[i] = &processor.Processor{JobProcessIdf: JobProcIdfs[i]}
+			go jobProc[i].Run()
+		}
+
+
+		//for index, messenger := range JobProcIdfs {
+		//	JobProcIdfs[index] = utils.NewSyncMessenger()
+		//	jobProc[index] = &processor.Processor{JobProcessIdf: messenger}
+		//	jobProc[index].Run()
+		//}
+
+		time.Sleep(10 * time.Second)
+		index := 0
+		//
 		for {
+			log.Debugf("Trying to execute the task")
 			go th.taskProcess(<-th.tasks, JobProcIdfs[index])
-			index ^= 1
+			index ++
+			index %= utils.HostAvailability
+			//index = index %
+			//index ^= 1
 		}
 	}()
 

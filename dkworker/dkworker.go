@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"os"
 	"time"
 )
 
@@ -23,6 +24,10 @@ type Worker struct {
 func NewWorker() *Worker {
 	hostname := uuid.New().String()
 	wkThComm := utils.NewSyncMessenger()
+
+	err := os.MkdirAll(utils.TmpImgDir, os.ModePerm)
+	utils.Check(err, "Unable to make dir tmp")
+
 	return &Worker{
 		localPort: utils.WorkerPort,
 		hostname:  hostname,
@@ -51,8 +56,8 @@ func(w *Worker) callRegistryFunc(funcName string,
 			commInfo.(*dkmanager.HostRegisterInfo))
 		break
 	case "ReleaseRequest":
-		respond, err = client.ReleaseResource(ctx,
-			commInfo.(*dkmanager.ReleaseRequest))
+		respond, err = client.ReportResult(ctx,
+			commInfo.(*dkmanager.SubTaskResult))
 
 	default:
 		break
@@ -90,7 +95,7 @@ func (w *Worker) Run() {
 	// listening to taskHandler:
 	go func() {
 		for {
-			releaseRequest := w.wkThComm.Serve().(*dkmanager.ReleaseRequest)
+			releaseRequest := w.wkThComm.Serve().(*dkmanager.SubTaskResult)
 			releaseRespond := w.callRegistryFunc("ReleaseRequest",
 				releaseRequest).(*dkmanager.ReleaseResult)
 			if releaseRespond.GetReleaseResult() == "Success" {

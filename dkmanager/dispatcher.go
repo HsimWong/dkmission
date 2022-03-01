@@ -161,7 +161,7 @@ func (dsp *dispatcher) subtaskGenerate() {
 }
 
 func (dsp *dispatcher) logDispatch(sub *subtask, subtaskRole string)  {
-	log.Infof(subtaskRole)
+	//log.Infof(subtaskRole)
 	//sqlCmd := `update deployment set ("?_deploy_target", "?_deploy_time")
 	//= ("?","?") where subtask_ID = "?"
 //`
@@ -169,14 +169,14 @@ func (dsp *dispatcher) logDispatch(sub *subtask, subtaskRole string)  {
 	sqlCmd := fmt.Sprintf(`update deployment set (%s_deploy_target, %s_deploy_time) 
 			= ("%s", "%s") where subtask_ID = "%s"`, subtaskRole, subtaskRole,
 			sub.DeployTarget, time.Now().String(), sub.SubtaskID)
-	fmt.Println(sqlCmd)
+	//fmt.Println(sqlCmd)
 	dbInstance := utils.NewDatabase()
 	statement, err := dbInstance.DbObject.Prepare(sqlCmd)
 	utils.Check(err, "database preparing for logDispatch failed")
 	//_, err = statement.Exec(subtaskRole, subtaskRole, sub.DeployTarget, time.Now().String(), sub.SubtaskID)
-	Result, err := statement.Exec()
+	_, err = statement.Exec()
 	utils.Check(err, "database executing for logDispatch failed")
-	log.Println(Result)
+	//log.Println(Result)
 }
 
 

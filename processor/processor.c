@@ -2,6 +2,10 @@
 #include <darknet.h>
 #include "processor.h"
 
+// rm processor.o && gcc -c processor.c -L. -ldarknet -Wl,-rpath,$PWD/libdarknet.so
+
+
+
 
 // static char *cfg_file = "oiltank-playground-yolov3.cfg";
 // static char *weight_file = "oiltank-playground-yolov3_900.weights";
@@ -9,13 +13,14 @@
 
 ProcessServer *newProcessServer() {
     ProcessServer *ps = malloc(sizeof(ProcessServer));
-    ps->cfg_file = "oiltank-playground-yolov3.cfg";
-    ps->weight_file = "oiltank-playground-yolov3_900.weights";
-    ps->names_file = "oiltank-playground-obj.names";
+    ps->cfg_file = "processor/oiltank-playground-yolov3.cfg";
+    ps->weight_file = "processor/oiltank-playground-yolov3_900.weights";
+    ps->names_file = "processor/oiltank-playground-obj.names";
     ps->labels = get_labels(ps->names_file);
 
     ps->thresh = 0.3;
     ps->hier_thresh = 0.3;
+
 
     ps->classes = 0;
     ps->detections = NULL;
