@@ -1,5 +1,4 @@
 package processor
-import "C"
 // #cgo LDFLAGS: -L.
 // #cgo linux LDFLAGS: -ldarknet
 // #include "processor.h"

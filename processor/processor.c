@@ -13,9 +13,9 @@
 
 ProcessServer *newProcessServer() {
     ProcessServer *ps = malloc(sizeof(ProcessServer));
-    ps->cfg_file = "processor/oiltank-playground-yolov3.cfg";
-    ps->weight_file = "processor/oiltank-playground-yolov3_900.weights";
-    ps->names_file = "processor/oiltank-playground-obj.names";
+    ps->cfg_file = "processor/oiltank-yolov2.cfg";
+    ps->weight_file = "processor/oiltank-yolov2_900.weights";
+    ps->names_file = "processor/oiltank.names";
     ps->labels = get_labels(ps->names_file);
 
     ps->thresh = 0.3;
