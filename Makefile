@@ -22,14 +22,20 @@ pushImage:
 
 clean:
 	rm -rf ./build
-	rm $(PREFIX)/lib/libdarknet.so
-	rm $(PREFIX)/include/darknet.h
+	rm processor.o
+	make clean -C darknet 
+	sudo rm $(PREFIX)/lib/libdarknet.so
+	sudo rm $(PREFIX)/include/darknet.h
 
 dependency: darknetinstall
 	sudo apt install imagemagick -y
-	cd processor && gcc -c processor.c -L. -ldarknet -Wl,-rpath,$PWD/libdarknet.so
+	cd processor && gcc -c processor.c -ldarknet
 
-darknetinstall:
-	cp processor/libdarknet.so $(PREFIX)/lib
-	cp processor/darknet.h $(PREFIX)/include
+darknet-prepare:
+	git submodule sync --recursive
+	make -C darknet -j8
+
+darknetinstall: darknet-prepare 
+	sudo cp darknet/libdarknet.so $(PREFIX)/lib
+	sudo cp darknet/include/darknet.h $(PREFIX)/include
 	sudo ldconfig
