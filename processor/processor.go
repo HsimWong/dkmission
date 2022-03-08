@@ -28,7 +28,7 @@ func (p *Processor) Run() {
 	//C.Hello()
 	// Using this method for not knowing the exact type of processServer
 	var processServer = C.newProcessServer()
-
+	// modelLoadSig := make(chan bool, 1)
 	//print()
 	//log.Println(reflect.Type(processServer))
 	C.loadModel(processServer)
@@ -42,7 +42,7 @@ func (p *Processor) Run() {
 			C.getBoundingBox(processServer, targetNum, unsafe.Pointer(&boundingboxSlices[0]))
 			fmt.Println(boundingboxSlices)
 		}
-		
+
 		result := make([]*dkmanager.ObjectResult, int(targetNum))
 		for i, v := range boundingboxSlices {
 			result[i] = &dkmanager.ObjectResult{

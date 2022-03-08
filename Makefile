@@ -33,7 +33,7 @@ dependency: darknetinstall
 	cd processor && gcc -c processor.c -L. -ldarknet -Wl,-rpath,$PWD/libdarknet.so
 
 darknet-prepare:
-	git submodule sync --recursive
+	git submodule update --init --recursive
 	make -C darknet -j8
 
 darknetinstall: darknet-prepare

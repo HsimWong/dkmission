@@ -15,11 +15,11 @@ ProcessServer *newProcessServer() {
     ProcessServer *ps = malloc(sizeof(ProcessServer));
     ps->cfg_file = "processor/oiltank-yolov2.cfg";
     ps->weight_file = "processor/oiltank-yolov2_900.weights";
-    ps->names_file = "processor/oiltank.names";
+    ps->names_file = "processor/oiltank-yolov2.names";
     ps->labels = get_labels(ps->names_file);
 
-    ps->thresh = 0.3;
-    ps->hier_thresh = 0.3;
+    ps->thresh = 0.5;
+    ps->hier_thresh = 0.5;
 
 
     ps->classes = 0;
@@ -39,6 +39,8 @@ int loadModel(ProcessServer *self) {
 }
 
 int runDetection(ProcessServer *self, char *filepath) {
+    //return 0;
+    printf("running detection on : %s", filepath);
     image im = load_image_color(filepath, 0, 0);
     
     // And scale it to the parameters define din *.cfg file.
@@ -67,42 +69,20 @@ int runDetection(ProcessServer *self, char *filepath) {
 
 void getBoundingBox(ProcessServer *self, int num_boxes, void *cgoBoundingboxes) {
     BoundingBox *boundingboxes = (BoundingBox *)cgoBoundingboxes;
-    // printf("Entered Detection\n");
-    // // BoundingBox **ret;
-    // image im = load_image_color(filepath, 0, 0);
     
-    // // And scale it to the parameters define din *.cfg file.
-    // image sized = letterbox_image(im, self->net->w, self->net->h);
-
-    
-    // float *frame_data = sized.data;
-
-    // // Do prediction.
-    // double time = what_time_is_it_now();
-    // network_predict(self->net, frame_data);
-
-    // printf("'%s' predicted in %lf seconds\n", filepath, 
-    //     (what_time_is_it_now() - time));
-
-    // // Get number fo predicted classes (objects).
-    // int num_boxes = 0;
-    // self->detections = get_network_boxes(self->net, 
-    //     im.w, im.h, self->thresh, self->hier_thresh, NULL, 1, &num_boxes);
-
-    // printf("Detected %d object, class %d", num_boxes, self->detections->classes);
-
-    // Uncomment this if you need sort predicted result.
-//    do_nms_sort(detections, num_boxes, l.classes, nms);
 
     // -----------------------------------------------------------------------------------------------------------------
     // Print results.
     // -----------------------------------------------------------------------------------------------------------------
 
     // Iterate over predicted classes and print information.
+	// Overflow when num_boxes >= 256
+	// should use int
 
-    for (u_int8_t i = 0; i < num_boxes; ++i) {
-        for (u_int8_t j = 0; j < self->classes; ++j) {
+    for (int i = 0; i < num_boxes; ++i) {
+        for (int j = 0; j < self->classes; ++j) {
             if (self->detections[i].prob[j] > self->thresh) {
+                printf("Num of Boxes: %d, current i : %d", num_boxes, i);
                 printf("%s %d ", self->labels[j],  (int16_t) (self->detections[i].prob[j] * 100));
                 // BoundingBox boundingbox = boundingboxes[i];
                 printf("%f, %f, %f, %f \n",
@@ -125,6 +105,7 @@ void getBoundingBox(ProcessServer *self, int num_boxes, void *cgoBoundingboxes) 
     // -----------------------------------------------------------------------------------------------------------------
 
     free_detections(self->detections, num_boxes);
+    return;
 
 
 }

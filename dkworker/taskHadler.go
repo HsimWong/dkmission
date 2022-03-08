@@ -64,10 +64,11 @@ func (th *TaskHandler) taskProcess(task *dkworker.Task, messenger *utils.SyncMes
 	rsp := th.msgToWorker.Request(&dkmanager.SubTaskResult{
 		Subtask_ID: task.SubTaskID,
 		Objects:    result,
-	})
+	}).(string)
 
 	//rsp := th.msgToWorker.Request(&dkmanager.ReleaseRequest{Subtask_ID: task.SubTaskID}).(string)
 	if rsp != "Success" {
+		log.Debugf("rsp:  %s", rsp)
 		panic("Release Failed:")
 	}
 }

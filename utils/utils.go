@@ -19,7 +19,7 @@ const (
 	WidthBase = 480
 	HeightBase = 480
 
-	HostAvailability = 2
+	HostAvailability = 1
 
 	RegistryServerIP = "localhost"
 	RegistryServerPort = ":60000"

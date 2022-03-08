@@ -87,6 +87,9 @@ func (r *Registry) logRelease(info *dkmanagermesg.SubTaskResult, targetAddr stri
 
 
 	for _, resultObject := range info.Objects {
+		if resultObject.TopLeftX + resultObject.TopLeftY + resultObject.Width + resultObject.Height <= 5 {
+			continue
+		}
 		stmt, err = dbInstance.DbObject.Prepare(resultsCmd)
 		utils.Check(err, "database for logging result has failed in preparation")
 		_, err = stmt.Exec(uuid.New().String(), roleIndic, info.Subtask_ID,
@@ -110,7 +113,7 @@ func (r Registry) ReportResult(ctx context.Context, info *dkmanagermesg.SubTaskR
 	if avail, ok := r.hosts[targetAddr]; ok {
 		avail.HostAvailability ++
 		ret = &dkmanagermesg.ReleaseResult{ReleaseResult: "Success"}
-		r.logRelease(info, targetAddr)
+		go r.logRelease(info, targetAddr)
 		err = nil
 	} else {
 		ret = &dkmanagermesg.ReleaseResult{ReleaseResult: "TargetNotExist"}
