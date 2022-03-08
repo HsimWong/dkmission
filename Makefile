@@ -26,10 +26,10 @@ clean:
 	rm processor/processor.o 
 	rm processor/libdarknet.so
 	rm processor/darknet.h
-	sudo rm ${PREFIX}/include/darknet.h
+	rm ${PREFIX}/include/darknet.h
 
 dependency: darknetinstall
-	sudo apt install imagemagick -y
+	apt install imagemagick -y
 	cd processor && gcc -c processor.c -L. -ldarknet -Wl,-rpath,$PWD/libdarknet.so
 
 darknet-prepare:
@@ -39,4 +39,9 @@ darknet-prepare:
 darknetinstall: darknet-prepare
 	cp darknet/libdarknet.so processor
 	cp darknet/include/darknet.h processor
-	sudo cp darknet/include/darknet.h /usr/local/include/
+	cp darknet/include/darknet.h /usr/local/include/
+
+dockerPrepare:
+	cp darknet/libdarknet.so processor
+	cp darknet/include/darknet.h processor
+	cp darknet/include/darknet.h /usr/local/include/
